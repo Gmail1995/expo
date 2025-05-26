@@ -92,12 +92,16 @@ const stackRouterOverride = (original) => {
                      * If 'getID' or 'singular' is set and a match is found, instead of pushing a new screen,
                      * the existing screen will be moved to the HEAD of the stack. If there are multiple matches, the rest will be removed.
                      */
+                    const forcePush = state.routes[state.index ?? 0].name !== action.payload.name;
                     const nextState = original.getStateForAction(state, action, {
                         ...options,
                         routeGetIdList: {
                             ...options.routeGetIdList,
                             [action.payload.name]: getIdFunction((options) => {
-                                return (0, useScreens_1.getSingularId)(action.payload.name, options);
+                                const id = (0, useScreens_1.getSingularId)(action.payload.name, options);
+                                return forcePush && options.params && options.params === action.payload.params
+                                    ? `${id}-push`
+                                    : id;
                             }),
                         },
                     });

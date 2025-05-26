@@ -134,12 +134,20 @@ export const stackRouterOverride: NonNullable<ComponentProps<typeof RNStack>['UN
            * If 'getID' or 'singular' is set and a match is found, instead of pushing a new screen,
            * the existing screen will be moved to the HEAD of the stack. If there are multiple matches, the rest will be removed.
            */
+
+          // NAVIGATE pushes forward if the current screen is not the same as the target screen.
+          const forcePush = state.routes[state.index ?? 0].name !== action.payload.name;
+
           const nextState = original.getStateForAction(state, action, {
             ...options,
             routeGetIdList: {
               ...options.routeGetIdList,
               [action.payload.name]: getIdFunction((options) => {
-                return getSingularId(action.payload.name, options);
+                const id = getSingularId(action.payload.name, options);
+                // If the params are the same as the action, then we are calculating the ID for the current action.
+                return forcePush && options.params && options.params === action.payload.params
+                  ? `${id}-push`
+                  : id;
               }),
             },
           });
